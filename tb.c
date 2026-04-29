@@ -174,7 +174,7 @@ void docmd(void)
       printf("%d |  ", __LINE__);
       printf("[%d] %s\n", curline, &thelin[textp - 1]);
     }
-    if (accept("bye") || accept("quit"))
+    if (accept("bye") || accept("quit") || accept("exit"))
     {
       exit(0);
     }
@@ -327,7 +327,7 @@ void showtime(bool running)
 }
 
 const char *HELP = "+------------------------------------------------------------------------------+\n"
-                   "| bye, clear, cls, end/stop, help, list, load/save, new, run, tron/troff       |\n"
+                   "| bye, exit, clear, cls, end/stop, help, list, load/save, new, run, tron/troff |\n"
                    "| for <var> = <expr1> to <expr2> ... next <var>                                |\n"
                    "| gosub <expr> ... return                                                      |\n"
                    "| goto <expr>                                                                  |\n"
@@ -1000,7 +1000,7 @@ void initlex2(void)
 void nexttok(void)
 {
   toktype = kNONE;
-begin:
+  // begin:
   tok[0] = thech;
   getch();
   if (tok[0] == '\0')
@@ -1009,7 +1009,7 @@ begin:
   }
   else if (isspace(tok[0]))
   {
-    goto begin;
+    nexttok();
   }
   else if (isalpha(tok[0]))
   {
