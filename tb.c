@@ -1053,7 +1053,7 @@ void nexttok(void)
     if ((tok[0] == '<' && (thech == '>' || thech == '=')) ||
         (tok[0] == '>' && thech == '='))
     {
-      tok[1] == thech;
+      tok[1] = thech;
       tok[2] = '\0';
       getch();
     }
