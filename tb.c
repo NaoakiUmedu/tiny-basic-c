@@ -470,7 +470,7 @@ void inputstmt(void)
   {
     printf("%s", &tok[1]);
     nexttok();
-    expect((const char *)',');
+    expect(",");
   }
   else
   {
