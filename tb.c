@@ -16,9 +16,11 @@ bool streql(const char *s1, const char *s2) { return strcmp(s1, s2) == 0; }
 
 bool strneql(const char *s1, const char *s2) { return strcmp(s1, s2) != 0; }
 
-char *m_strdup(char *cp) {
+char *m_strdup(char *cp)
+{
   char *mp = malloc(strlen(cp) + 1);
-  if (mp == NULL) {
+  if (mp == NULL)
+  {
     return NULL;
   }
 #ifdef _WIN64
@@ -38,7 +40,8 @@ char *m_strdup(char *cp) {
 //-----------------------------------------------------------------------------
 
 // トークン種別
-typedef enum {
+typedef enum
+{
   kNONE,   // NONE
   kPUNCT,  // 句読文字 #()*+,-/:;<=>?@\\^
   kIDENT,  // 変数割り当て
@@ -115,8 +118,10 @@ void debugLog(const char *msg);
 //----------------------------------------------------------------------------
 
 // MAIN PROGRAM
-int main(int argc, char *argv[]) {
-  if (argc > 1) {
+int main(int argc, char *argv[])
+{
+  if (argc > 1)
+  {
     // 入力をファイル名を表す文字列と解釈
     toktype = kSTRING;
     sprintf(tok, "\"%s", argv[1]);
@@ -130,25 +135,34 @@ int main(int argc, char *argv[]) {
     strncpy(tok, "run", strlen(tok) - 1);
 #endif
     docmd();
-  } else {
+  }
+  else
+  {
     newstmt();
     help();
   }
-  while (true) {
+  while (true)
+  {
     errors = false;
     printf("c> ");
     // 前回のデータを削除
-    if (pgm[0]) {
+    if (pgm[0])
+    {
       free(pgm[0]);
     }
     pgm[0] = mygetline(stdin);
-    if (pgm[0] && pgm[0][0] != '\0') {
+    if (pgm[0] && pgm[0][0] != '\0')
+    {
       initlex(0);
-      if (toktype == kNUMBER) {
-        if (validlinenum()) {
+      if (toktype == kNUMBER)
+      {
+        if (validlinenum())
+        {
           pgm[num] = m_strdup(pgm[0] + textp);
         }
-      } else {
+      }
+      else
+      {
         docmd();
       }
     }
@@ -157,102 +171,165 @@ int main(int argc, char *argv[]) {
 }
 
 // コマンド実行
-void docmd(void) {
+void docmd(void)
+{
   debugLog("@@@ docmd");
   bool running = false;
-  while (true) {
+  while (true)
+  {
     need_colon = true;
-    if (tracing && tok[0] != ':' && thelin && textp < strlen(thelin)) {
+    if (tracing && tok[0] != ':' && thelin && textp < strlen(thelin))
+    {
       printf("%d |  ", __LINE__);
       printf("[%d] %s\n", curline, &thelin[textp - 1]);
     }
-    if (accept("bye") || accept("quit") || accept("exit")) {
+    if (accept("bye") || accept("quit") || accept("exit"))
+    {
       exit(0);
-    } else if (accept("end") || accept("stop")) {
+    }
+    else if (accept("end") || accept("stop"))
+    {
       showtime(running);
       return;
-    } else if (accept("end") || accept("stop")) {
+    }
+    else if (accept("end") || accept("stop"))
+    {
       showtime(running);
       return;
-    } else if (accept("clear")) {
+    }
+    else if (accept("clear"))
+    {
       clearvars();
       return;
-    } else if (accept("help")) {
+    }
+    else if (accept("help"))
+    {
       help();
       return;
-    } else if (accept("list")) {
+    }
+    else if (accept("list"))
+    {
       liststmt();
       return;
-    } else if (accept("load")) {
+    }
+    else if (accept("load"))
+    {
       loadstmt();
       return;
-    } else if (accept("new")) {
+    }
+    else if (accept("new"))
+    {
       newstmt();
       return;
-    } else if (accept("run")) {
+    }
+    else if (accept("run"))
+    {
       runstmt();
       running = true;
       need_colon = false;
-    } else if (accept("save")) {
+    }
+    else if (accept("save"))
+    {
       savestmt();
       return;
-    } else if (accept("tron")) {
+    }
+    else if (accept("tron"))
+    {
       tracing = true;
-    } else if (accept("troff")) {
+    }
+    else if (accept("troff"))
+    {
       tracing = false;
-    } else if (accept("cls")) {
+    }
+    else if (accept("cls"))
+    {
       ;
-    } else if (accept("for")) {
+    }
+    else if (accept("for"))
+    {
       forstmt();
-    } else if (accept("gosub")) {
+    }
+    else if (accept("gosub"))
+    {
       gosubstmt();
-    } else if (accept("goto")) {
+    }
+    else if (accept("goto"))
+    {
       gotostmt();
-    } else if (accept("if")) {
+    }
+    else if (accept("if"))
+    {
       ifstmt();
-    } else if (accept("input")) {
+    }
+    else if (accept("input"))
+    {
       inputstmt();
-    } else if (accept("next")) {
+    }
+    else if (accept("next"))
+    {
       nextstmt();
-    } else if (accept("let")) {
+    }
+    else if (accept("let"))
+    {
       assign();
-    } else if (accept("print") || accept("?")) {
+    }
+    else if (accept("print") || accept("?"))
+    {
       printstmt();
-    } else if (accept("return")) {
+    }
+    else if (accept("return"))
+    {
       returnstmt();
-    } else if (accept("@")) {
+    }
+    else if (accept("@"))
+    {
       arrassn();
-    } else if (toktype == kIDENT) {
+    }
+    else if (toktype == kIDENT)
+    {
       assign();
-    } else if (tok[0] == ':' || tok[0] == '\0') {
+    }
+    else if (tok[0] == ':' || tok[0] == '\0')
+    {
       /* handled below */
-    } else {
+    }
+    else
+    {
       printf("%d |  ", __LINE__);
       printf("(%d, %d) Unknown token %s: %s\n", curline, textp, tok,
              pgm[curline]);
       errors = true;
     }
 
-    if (errors) {
+    if (errors)
+    {
       return;
     }
-    if (tok[0] == '\0') {
-      if (curline == 0 || curline >= c_maxlines) {
+    if (tok[0] == '\0')
+    {
+      if (curline == 0 || curline >= c_maxlines)
+      {
         showtime(running);
         return;
       }
       initlex(curline + 1);
-    } else if (tok[0] == ':') {
+    }
+    else if (tok[0] == ':')
+    {
       nexttok();
-    } else if (need_colon && !expect(":")) {
+    }
+    else if (need_colon && !expect(":"))
+    {
       return;
     }
   }
 }
 
 // 時刻を表示
-void showtime(bool running) {
-  if (running) {
+void showtime(bool running)
+{
+  if (running)
+  {
     clock_t tt = clock() - timestart;
 #ifdef _WIN64
     printf("Took %.2f seconds\n", (float)(tt) / (float)CLK_TCK);
@@ -262,39 +339,26 @@ void showtime(bool running) {
   }
 }
 
-const char *HELP = "+----------------------------------------------------------"
-                   "--------------------+\n"
-                   "| bye, exit, clear, cls, end/stop, help, list, load/save, "
-                   "new, run, tron/troff |\n"
-                   "| for <var> = <expr1> to <expr2> ... next <var>            "
-                   "                    |\n"
-                   "| gosub <expr> ... return                                  "
-                   "                    |\n"
-                   "| goto <expr>                                              "
-                   "                    |\n"
-                   "| if <expr> then <statement>                               "
-                   "                    |\n"
-                   "| input [prompt,] <var>                                    "
-                   "                    |\n"
-                   "| <var>=<exp>                                              "
-                   "                    |\n"
-                   "| print <expr|string>[, <expr|string>][;]                  "
-                   "                    |\n"
-                   "| rem <anystring> or ' <anystring>                         "
-                   "                    |\n"
-                   "| Operators: ^, + / \\ mod + - < <= > >= = <>, not, and, "
-                   "or                    |\n"
-                   "| Integer variables a..z, and array @(expr)                "
-                   "                    |\n"
-                   "| Functions: abs(expr), asc(ch), rnd(expr), sgn(expr)      "
-                   "                    |\n"
-                   "+----------------------------------------------------------"
-                   "--------------------+";
+const char *HELP = "+------------------------------------------------------------------------------+\n"
+                   "| bye, exit, clear, cls, end/stop, help, list, load/save, new, run, tron/troff |\n"
+                   "| for <var> = <expr1> to <expr2> ... next <var>                                |\n"
+                   "| gosub <expr> ... return                                                      |\n"
+                   "| goto <expr>                                                                  |\n"
+                   "| if <expr> then <statement>                                                   |\n"
+                   "| input [prompt,] <var>                                                        |\n"
+                   "| <var>=<exp>                                                                  |\n"
+                   "| print <expr|string>[, <expr|string>][;]                                      |\n"
+                   "| rem <anystring> or ' <anystring>                                             |\n"
+                   "| Operators: ^, + / \\ mod + - < <= > >= = <>, not, and, or                    |\n"
+                   "| Integer variables a..z, and array @(expr)                                    |\n"
+                   "| Functions: abs(expr), asc(ch), rnd(expr), sgn(expr)                          |\n"
+                   "+------------------------------------------------------------------------------+";
 // HELP
 void help(void) { puts(HELP); }
 
 // GOSUB文
-void gosubstmt(void) {
+void gosubstmt(void)
+{
   debugLog("@@@ goto");
   gsp++;
   gstackln[gsp] = curline;
@@ -303,31 +367,38 @@ void gosubstmt(void) {
 }
 
 // 変数割り当て
-void assign(void) {
+void assign(void)
+{
   debugLog("@@@ assign");
   int var = getvarindex();
   nexttok();
   expect("=");
   vars[var] = expression(0);
-  if (tracing) {
+  if (tracing)
+  {
     printf("%d |  ", __LINE__);
     printf("*** %c = %d\n", var + 'a', vars[var]);
   }
 }
 
 // 配列割り当て
-void arrassn(void) {
+void arrassn(void)
+{
   debugLog("@@@ arrassn");
   int atndx = parenexpr();
-  if (!accept("=")) {
+  if (!accept("="))
+  {
     printf("%d |  ", __LINE__);
     printf("(%d, %d) Array Assign: Expectiong '=', found: %s", curline, textp,
            tok);
     errors = true;
-  } else {
+  }
+  else
+  {
     int n = expression(0);
     atarry[atndx] = n;
-    if (tracing) {
+    if (tracing)
+    {
       printf("%d |  ", __LINE__);
       printf("*** @(%d) = %d\n", atndx, n);
     }
@@ -336,7 +407,8 @@ void arrassn(void) {
 
 // FOR文
 // TODO これどうなってる?
-void forstmt(void) {
+void forstmt(void)
+{
   debugLog("@@@ for");
   int var, forndx, n;
 
@@ -345,34 +417,45 @@ void forstmt(void) {
   // vars(var)has the valude; var has the number valude of the variable in 0..25
   forndx = var;
   forvar[forndx] = vars[var];
-  if (!accept("to")) {
+  if (!accept("to"))
+  {
     printf("%d |  ", __LINE__);
     printf("(%d, %d) For: Expecting 'to, found: %s\n", curline, textp, tok);
     errors = true;
-  } else {
+  }
+  else
+  {
     n = expression(0);
     forlimit[forndx] = n;
     // need to store iter, limit, line, and col
     forline[forndx] = curline;
-    if (tok[0] == '\0') {
+    if (tok[0] == '\0')
+    {
       forpos[forndx] = textp;
-    } else {
+    }
+    else
+    {
       forpos[forndx] = textp - 2;
     }
   }
 }
 
 // IF文
-void ifstmt(void) {
+void ifstmt(void)
+{
   debugLog("@@@ if");
   need_colon = false;
-  if (expression(0) == 0) {
+  if (expression(0) == 0)
+  {
     // スルー
     skiptoeol();
-  } else {
+  }
+  else
+  {
     // THENはなくてもよい
     accept("then");
-    if (toktype == kNUMBER) {
+    if (toktype == kNUMBER)
+    {
       gotostmt();
     }
     // 行番号じゃなければ、次の解釈で普通に文を実行する。
@@ -380,34 +463,46 @@ void ifstmt(void) {
 }
 
 // INPUT文
-void inputstmt(void) {
+void inputstmt(void)
+{
   debugLog("@@@ input");
-  if (toktype == kSTRING) {
+  if (toktype == kSTRING)
+  {
     printf("%s", &tok[1]);
     nexttok();
     expect((const char *)',');
-  } else {
+  }
+  else
+  {
     printf("? ");
   }
   int var = getvarindex();
   nexttok();
   char *st = mygetline(stdin);
-  if (!st || st[0] == '\0') {
+  if (!st || st[0] == '\0')
+  {
     vars[var] = 0;
-  } else if (isdigit(st[0])) {
+  }
+  else if (isdigit(st[0]))
+  {
     char *endp; // strtolに使うだけ
     vars[var] = strtol(st, &endp, 10);
-  } else {
+  }
+  else
+  {
     vars[var] = st[0]; // 数値として格納
   }
   free(st);
 }
 
 // LIST文
-void liststmt(void) {
+void liststmt(void)
+{
   debugLog("@@@ list");
-  for (int i = 0; i < c_maxlines; ++i) {
-    if (pgm[i]) {
+  for (int i = 0; i < c_maxlines; ++i)
+  {
+    if (pgm[i])
+    {
       printf("%d %s \n", i, pgm[i]);
     }
     printf("\n");
@@ -415,17 +510,20 @@ void liststmt(void) {
 }
 
 // LOAD文
-void loadstmt(void) {
+void loadstmt(void)
+{
   debugLog("@@@ load");
   newstmt();
 
   char *filename;
-  if ((filename = getfilename("Load")) == NULL) {
+  if ((filename = getfilename("Load")) == NULL)
+  {
     goto load_free;
   }
 
   FILE *fp = fopen(filename, "r");
-  if (fp == NULL) {
+  if (fp == NULL)
+  {
     printf("%d |  ", __LINE__);
     printf("File %s not found\n", filename);
     goto load_free;
@@ -433,13 +531,17 @@ void loadstmt(void) {
 
   int n = 0;
   // ライン数でそのままインデックスを引き当てられるように、pgm[0]ではなくpgm[1]から格納している
-  while ((pgm[0] = mygetline(fp)) != NULL) {
+  while ((pgm[0] = mygetline(fp)) != NULL)
+  {
     initlex(0);
-    if (toktype == kNUMBER && validlinenum()) {
+    if (toktype == kNUMBER && validlinenum())
+    {
       // 行数ありの場合
       pgm[num] = strdup(pgm[0] + textp);
       n = num;
-    } else {
+    }
+    else
+    {
       n++;
       pgm[n] = strdup(pgm[0]);
     }
@@ -453,11 +555,14 @@ load_free:
 }
 
 // NEW文
-void newstmt(void) {
+void newstmt(void)
+{
   debugLog("@@@ new");
   clearvars();
-  for (int i = 0; i < c_maxlines; ++i) {
-    if (pgm[i]) {
+  for (int i = 0; i < c_maxlines; ++i)
+  {
+    if (pgm[i])
+    {
       free(pgm[i]);
       pgm[i] = NULL;
     }
@@ -466,17 +571,20 @@ void newstmt(void) {
 
 // NEXT文
 // TODO これどうなってる?
-void nextstmt(void) {
+void nextstmt(void)
+{
   debugLog("@@@ next");
   int forndx = getvarindex();
   forvar[forndx] = forvar[forndx] + 1;
   vars[forndx] = forvar[forndx];
-  if (tracing) {
+  if (tracing)
+  {
     printf("%d |  ", __LINE__);
     printf("*** %c = %d\n", forndx + 'a', vars[forndx]);
   }
 
-  if (forvar[forndx] <= forlimit[forndx]) {
+  if (forvar[forndx] <= forlimit[forndx])
+  {
     curline = forline[forndx];
     textp = forpos[forndx];
     initlex2();
@@ -486,49 +594,62 @@ void nextstmt(void) {
 }
 
 // PRINT文
-void printstmt(void) {
+void printstmt(void)
+{
   debugLog("@@@ print");
   bool printnl = true; // 次の行にPRINTする?
-  while (strneql(tok, ":") && tok[0] != '\0') {
+  while (strneql(tok, ":") && tok[0] != '\0')
+  {
     printnl = true;
     int printwidth = 0;
 
     // PRINT幅
-    if (accept("#")) {
-      if (num <= 0) {
+    if (accept("#"))
+    {
+      if (num <= 0)
+      {
         printf("%d |  ", __LINE__);
         printf("Expecting a print width, found: %s\n", pgm[curline]);
         return;
       }
       printwidth = num;
       nexttok();
-      if (!accept(",")) {
+      if (!accept(","))
+      {
         printf("%d |  ", __LINE__);
         printf("Print: Expecting a ',', found: %s\n", pgm[curline]);
         return;
       }
     }
 
-    if (toktype == kSTRING) {
+    if (toktype == kSTRING)
+    {
       printf("%*s", printwidth, &tok[1]);
       nexttok();
-    } else {
+    }
+    else
+    {
       printf("%*d", printwidth, expression(0));
     }
 
-    if (accept(",") || accept(";")) {
+    if (accept(",") || accept(";"))
+    {
       printnl = false;
-    } else {
+    }
+    else
+    {
       break;
     }
   }
-  if (printnl) {
+  if (printnl)
+  {
     printf("\n");
   }
 }
 
 // RETURN文
-void returnstmt(void) {
+void returnstmt(void)
+{
   debugLog("@@@ return");
   curline = gstackln[gsp];
   textp = gstacktp[gsp];
@@ -537,7 +658,8 @@ void returnstmt(void) {
 }
 
 // RUN文
-void runstmt(void) {
+void runstmt(void)
+{
   debugLog("@@@ run");
   timestart = clock();
   clearvars();
@@ -545,32 +667,39 @@ void runstmt(void) {
 }
 
 // GOTO文
-void gotostmt(void) {
+void gotostmt(void)
+{
   debugLog("@@@ goto");
   num = expression(0);
   ;
-  if (validlinenum()) {
+  if (validlinenum())
+  {
     initlex2();
   }
 }
 
 // SAVE文
-void savestmt(void) {
+void savestmt(void)
+{
   debugLog("@@@ save");
   char *filename;
-  if ((filename = getfilename("Save")) == NULL) {
+  if ((filename = getfilename("Save")) == NULL)
+  {
     goto save_free;
   }
 
   FILE *fp = fopen(filename, "w");
-  if (fp == NULL) {
+  if (fp == NULL)
+  {
     printf("%d |  ", __LINE__);
     printf("Fiel %s could not be opend for wriring\n", filename);
     goto save_free;
   }
 
-  for (int i = 1; i < c_maxlines; ++i) {
-    if (pgm[i]) {
+  for (int i = 1; i < c_maxlines; ++i)
+  {
+    if (pgm[i])
+    {
       fprintf(fp, "%d, %s\n", i, pgm[i]);
     }
   }
@@ -581,23 +710,30 @@ save_free:
 }
 
 // ファイル名取得
-char *getfilename(char action[]) {
+char *getfilename(char action[])
+{
   char *filename;
 
-  if (toktype == kSTRING) {
+  if (toktype == kSTRING)
+  {
     filename = strdup(&tok[1]);
-  } else {
+  }
+  else
+  {
     printf("%s: ", action);
     filename = mygetline(stdin);
   }
-  if (!filename) {
+  if (!filename)
+  {
     return NULL;
   }
-  if (filename[0] == '\0') {
+  if (filename[0] == '\0')
+  {
     free(filename);
     return NULL;
   }
-  if (strchr(filename, '.') == NULL) {
+  if (strchr(filename, '.') == NULL)
+  {
     filename = realloc(filename, strlen(filename) + 5);
     strcat(filename, ".bas");
   }
@@ -605,8 +741,10 @@ char *getfilename(char action[]) {
 }
 
 // 有効な行番号か?
-bool validlinenum(void) {
-  if (num <= 0 || num > c_maxlines) {
+bool validlinenum(void)
+{
+  if (num <= 0 || num > c_maxlines)
+  {
     printf("%d |  ", __LINE__);
     printf("(%d, %d) Line number out of range", curline, textp);
     errors = true;
@@ -616,16 +754,20 @@ bool validlinenum(void) {
 }
 
 // 変数初期化
-void clearvars(void) {
-  for (int i = 0; i < c_maxvars; ++i) {
+void clearvars(void)
+{
+  for (int i = 0; i < c_maxvars; ++i)
+  {
     vars[i] = 0;
   }
   gsp = 0;
 }
 
 // 変数のインデックスを取得
-int getvarindex(void) {
-  if (toktype != kIDENT) {
+int getvarindex(void)
+{
+  if (toktype != kIDENT)
+  {
     printf("%d |  ", __LINE__);
     printf("(%d, %d) Not a variable: %s\n", curline, textp, thelin);
     errors = true;
@@ -636,8 +778,10 @@ int getvarindex(void) {
 
 // 期待した文字列が来ているか確認
 // accept()と同じ理由でfalseを返している
-bool expect(const char *s) {
-  if (!accept(s)) {
+bool expect(const char *s)
+{
+  if (!accept(s))
+  {
     printf("%d |  ", __LINE__);
     printf("(%d, %d) Expecting %s, buf ound %s, %s", curline, textp, s, tok,
            thelin);
@@ -649,8 +793,10 @@ bool expect(const char *s) {
 
 // 期待したトークンだったら次のトークンを読み進める
 // if(!accept(xxx)) { エラー }みたいにするのでOKだったらfalseで返してる
-bool accept(const char *s) {
-  if (streql(tok, s)) {
+bool accept(const char *s)
+{
+  if (streql(tok, s))
+  {
     nexttok();
     return true;
   }
@@ -658,93 +804,154 @@ bool accept(const char *s) {
 }
 
 // 式を実行する(数値の被演算子、単項演算子、関数、変数)
-int expression(int minprec) {
+int expression(int minprec)
+{
   int n = 0;
 
   // handle numeric operands, unary operators, functions, variables
-  if (toktype == kNUMBER) {
+  if (toktype == kNUMBER)
+  {
     n = num;
     nexttok();
-  } else if (accept("-")) {
+  }
+  else if (accept("-"))
+  {
     n = -expression(7);
-  } else if (accept("+")) {
+  }
+  else if (accept("+"))
+  {
     n = expression(7);
-  } else if (accept("not")) {
+  }
+  else if (accept("not"))
+  {
     n = !expression(3);
-  } else if (accept("abs")) {
+  }
+  else if (accept("abs"))
+  {
     n = abs(parenexpr());
-  } else if (accept("asc")) {
+  }
+  else if (accept("asc"))
+  {
     expect("(");
     n = tok[1];
     nexttok();
     expect(")");
-  } else if (accept("rnd") || accept("irnd")) {
+  }
+  else if (accept("rnd") || accept("irnd"))
+  {
     n = rnd(parenexpr());
-  } else if (accept("sgn")) {
+  }
+  else if (accept("sgn"))
+  {
     n = parenexpr();
     n = (n > 0) - (n < 0);
-  } else if (toktype == kIDENT) {
+  }
+  else if (toktype == kIDENT)
+  {
     n = vars[getvarindex()];
     nexttok();
-  } else if (accept("@")) {
+  }
+  else if (accept("@"))
+  {
     n = atarry[parenexpr()];
-  } else if (tok[0] == '(') {
+  }
+  else if (tok[0] == '(')
+  {
     n = parenexpr();
-  } else {
+  }
+  else
+  {
     printf(
         "(%d, %d) Syntax error: expecting an operand, found: %s toktype: %d\n",
         curline, textp, tok, toktype);
     return n;
   }
 
-  for (;;) { // while binary operator and precedence of tok >= minprec
-    if (minprec <= 1 && accept("or")) {
+  for (;;)
+  { // while binary operator and precedence of tok >= minprec
+    if (minprec <= 1 && accept("or"))
+    {
       n = n | expression(2);
-    } else if (minprec <= 2 && accept("and")) {
+    }
+    else if (minprec <= 2 && accept("and"))
+    {
       n = n & expression(3);
-    } else if (minprec <= 4 && accept("=")) {
+    }
+    else if (minprec <= 4 && accept("="))
+    {
       n = n == expression(5);
-    } else if (minprec <= 4 && accept("<")) {
+    }
+    else if (minprec <= 4 && accept("<"))
+    {
       n = n < expression(5);
-    } else if (minprec <= 4 && accept(">")) {
+    }
+    else if (minprec <= 4 && accept(">"))
+    {
       n = n > expression(5);
-    } else if (minprec <= 4 && accept("<>")) {
+    }
+    else if (minprec <= 4 && accept("<>"))
+    {
       n = n != expression(5);
-    } else if (minprec <= 4 && accept("<=")) {
+    }
+    else if (minprec <= 4 && accept("<="))
+    {
       n = n <= expression(5);
-    } else if (minprec <= 4 && accept(">=")) {
+    }
+    else if (minprec <= 4 && accept(">="))
+    {
       n = n >= expression(5);
-    } else if (minprec <= 5 && accept("+")) {
+    }
+    else if (minprec <= 5 && accept("+"))
+    {
       n += expression(6);
-    } else if (minprec <= 5 && accept("-")) {
+    }
+    else if (minprec <= 5 && accept("-"))
+    {
       n -= expression(6);
-    } else if (minprec <= 6 && accept("*")) {
+    }
+    else if (minprec <= 6 && accept("*"))
+    {
       n *= expression(7);
-    } else if (minprec <= 6 && accept("/")) {
+    }
+    else if (minprec <= 6 && accept("/"))
+    {
       n /= expression(7);
-    } else if (minprec <= 6 && accept("\\")) {
+    }
+    else if (minprec <= 6 && accept("\\"))
+    {
       n /= expression(7);
-    } else if (minprec <= 6 && accept("mod")) {
+    }
+    else if (minprec <= 6 && accept("mod"))
+    {
       n %= expression(7);
-    } else if (minprec <= 8 && accept("^")) {
+    }
+    else if (minprec <= 8 && accept("^"))
+    {
       n = pow(n, expression(9));
-    } else {
+    }
+    else
+    {
       break;
     }
   }
   return n;
 }
 // 括弧の処理
-int parenexpr(void) {
+int parenexpr(void)
+{
   int n = 0;
 
-  if (!accept("(")) {
+  if (!accept("("))
+  {
     printf("%d |  ", __LINE__);
     printf("(%d, %d) Paren Expr: Expectiong '(' found %s\n", curline, textp,
            tok);
-  } else {
+  }
+  else
+  {
     n = expression(0); // 括弧の真ん中
-    if (!accept(")")) {
+    if (!accept(")"))
+    {
       printf("%d |  ", __LINE__);
       printf("(%dm %d) Paren Expr: Expecting ')', found: %s\n", curline, textp,
              tok);
@@ -757,22 +964,27 @@ int parenexpr(void) {
 int rnd(int range) { return rand() & range + 1; }
 
 // 読むものがなかったらnullを返す
-char *mygetline(FILE *fp) {
+char *mygetline(FILE *fp)
+{
   char *buf, *p;
   int size = BUFSIZ;
 
   p = buf = malloc(size);
-  while (true) {
+  while (true)
+  {
     int c = fgetc(fp);
-    if (c == EOF || c == '\n' || c == '\r') {
-      if (c == EOF && p == buf) {
+    if (c == EOF || c == '\n' || c == '\r')
+    {
+      if (c == EOF && p == buf)
+      {
         free(buf);
         return NULL;
       }
       *p = '\0';
       return buf;
     }
-    if (p - buf >= size) {
+    if (p - buf >= size)
+    {
       size += BUFSIZ;
       buf = realloc(buf, size);
     }
@@ -783,51 +995,71 @@ char *mygetline(FILE *fp) {
 }
 
 // 字句の初期化
-void initlex(int n) {
+void initlex(int n)
+{
   curline = n;
   textp = 0;
   initlex2();
 }
 
 // 字句の初期化2
-void initlex2(void) {
+void initlex2(void)
+{
   need_colon = false;
   thelin = pgm[curline];
   thech = ' ';
   nexttok();
 }
 
-void nexttok(void) {
+void nexttok(void)
+{
   toktype = kNONE;
   // begin:
   tok[0] = thech;
   getch();
-  if (tok[0] == '\0') {
+  if (tok[0] == '\0')
+  {
     // プログラム行末 なにもしない
-  } else if (isspace(tok[0])) {
+  }
+  else if (isspace(tok[0]))
+  {
     nexttok();
-  } else if (isalpha(tok[0])) {
+  }
+  else if (isalpha(tok[0]))
+  {
     readident();
-    if (streql(tok, "rem")) {
+    if (streql(tok, "rem"))
+    {
       // 変数の後ろにコメントを書けるようにしている
       skiptoeol();
     }
-  } else if (isdigit(tok[0])) {
+  }
+  else if (isdigit(tok[0]))
+  {
     readint();
-  } else if (tok[0] == '"') {
+  }
+  else if (tok[0] == '"')
+  {
     readstr();
-  } else if (tok[0] == '\'') {
+  }
+  else if (tok[0] == '\'')
+  {
     skiptoeol();
-  } else if (strchr("#()*+,-/:;<=>?@\\^", tok[0]) != NULL) {
+  }
+  else if (strchr("#()*+,-/:;<=>?@\\^", tok[0]) != NULL)
+  {
     tok[1] = '\0';
     toktype = kPUNCT;
     if ((tok[0] == '<' && (thech == '>' || thech == '=')) ||
-        (tok[0] == '>' && thech == '=')) {
+        (tok[0] == '>' && thech == '='))
+    {
       tok[1] == thech;
       tok[2] = '\0';
       getch();
     }
-  } else {
+  }
+  else
+  {
     printf("%d |  ", __LINE__);
     printf("(%d, %d) What? %c (%d) %s\n", curline, textp, tok[0], tok[0],
            thelin);
@@ -836,18 +1068,22 @@ void nexttok(void) {
   }
 }
 
-void skiptoeol(void) {
+void skiptoeol(void)
+{
   tok[0] = '\0';
   toktype = kNONE;
   textp = strlen(thelin) + 1;
 }
 
 // 変数名と区別するためにダブルクォートを文字列の先頭に保持する
-void readstr(void) {
+void readstr(void)
+{
   char *p = &tok[1];
   toktype = kSTRING;
-  while (thech != '"') {
-    if (thech == '\0') {
+  while (thech != '"')
+  {
+    if (thech == '\0')
+    {
       printf("%d |  ", __LINE__);
       printf("(%d, %d) String not terminated\n", curline, textp);
       errors = true;
@@ -860,22 +1096,26 @@ void readstr(void) {
   getch();
 }
 
-void readident(void) {
+void readident(void)
+{
   char *p = &tok[1];
   tok[0] = tolower(tok[0]);
   toktype = kIDENT;
-  while (isalnum(thech)) {
+  while (isalnum(thech))
+  {
     *p++ = tolower((char)thech);
     getch();
   }
   *p = '\0';
 }
 
-void readint(void) {
+void readint(void)
+{
   char *p = &tok[1];
   char *endp;
   toktype = kNUMBER;
-  while (isdigit(thech)) {
+  while (isdigit(thech))
+  {
     *p++ = thech;
     getch();
   }
@@ -883,19 +1123,26 @@ void readint(void) {
   num = strtol(tok, &endp, 10);
 }
 
-void getch(void) {
-  if (!thelin) {
+void getch(void)
+{
+  if (!thelin)
+  {
     thech = '\0';
-  } else {
+  }
+  else
+  {
     thech = thelin[textp];
-    if (thech != '\0') {
+    if (thech != '\0')
+    {
       ++textp;
     }
   }
 }
 
-void debugLog(const char *msg) {
-  if (tracing) {
+void debugLog(const char *msg)
+{
+  if (tracing)
+  {
     puts(msg);
   }
 }
