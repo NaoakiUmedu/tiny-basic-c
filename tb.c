@@ -6,6 +6,12 @@
 #include <string.h>
 #include <time.h>
 
+#ifdef _WIN64
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
+
 //-----------------------------------------------------------------------------
 
 #ifndef CLK_TCK
@@ -77,7 +83,7 @@ int forpos[c_maxvars];   // FOR文の位置?
 
 //----------------------------------------------------------------------------
 
-bool accept(const char *s);
+bool tb_accept(const char *s);
 void arrassn(void);
 void assign(void);
 void clearvars(void);
@@ -114,6 +120,7 @@ void showtime(bool running);
 void skiptoeol(void);
 bool validlinenum(void);
 void debugLog(const char *msg);
+void sleepstmt(void);
 
 //----------------------------------------------------------------------------
 
@@ -183,105 +190,110 @@ void docmd(void)
       printf("%d |  ", __LINE__);
       printf("[%d] %s\n", curline, &thelin[textp - 1]);
     }
-    if (accept("bye") || accept("quit") || accept("exit"))
+    if (tb_accept("bye") || tb_accept("quit") || tb_accept("exit"))
     {
       exit(0);
     }
-    else if (accept("end") || accept("stop"))
+    else if (tb_accept("end") || tb_accept("stop"))
     {
       showtime(running);
       return;
     }
-    else if (accept("end") || accept("stop"))
+    else if (tb_accept("end") || tb_accept("stop"))
     {
       showtime(running);
       return;
     }
-    else if (accept("clear"))
+    else if (tb_accept("clear"))
     {
       clearvars();
       return;
     }
-    else if (accept("help"))
+    else if (tb_accept("help"))
     {
       help();
       return;
     }
-    else if (accept("list"))
+    else if (tb_accept("sleep"))
+    {
+      sleepstmt();
+      return;
+    }
+    else if (tb_accept("list"))
     {
       liststmt();
       return;
     }
-    else if (accept("load"))
+    else if (tb_accept("load"))
     {
       loadstmt();
       return;
     }
-    else if (accept("new"))
+    else if (tb_accept("new"))
     {
       newstmt();
       return;
     }
-    else if (accept("run"))
+    else if (tb_accept("run"))
     {
       runstmt();
       running = true;
       need_colon = false;
     }
-    else if (accept("save"))
+    else if (tb_accept("save"))
     {
       savestmt();
       return;
     }
-    else if (accept("tron"))
+    else if (tb_accept("tron"))
     {
       tracing = true;
     }
-    else if (accept("troff"))
+    else if (tb_accept("troff"))
     {
       tracing = false;
     }
-    else if (accept("cls"))
+    else if (tb_accept("cls"))
     {
       ;
     }
-    else if (accept("for"))
+    else if (tb_accept("for"))
     {
       forstmt();
     }
-    else if (accept("gosub"))
+    else if (tb_accept("gosub"))
     {
       gosubstmt();
     }
-    else if (accept("goto"))
+    else if (tb_accept("goto"))
     {
       gotostmt();
     }
-    else if (accept("if"))
+    else if (tb_accept("if"))
     {
       ifstmt();
     }
-    else if (accept("input"))
+    else if (tb_accept("input"))
     {
       inputstmt();
     }
-    else if (accept("next"))
+    else if (tb_accept("next"))
     {
       nextstmt();
     }
-    else if (accept("let"))
+    else if (tb_accept("let"))
     {
       assign();
     }
-    else if (accept("print") || accept("?"))
+    else if (tb_accept("print") || tb_accept("?"))
     {
       printstmt();
     }
-    else if (accept("return"))
+    else if (tb_accept("return"))
     {
       returnstmt();
     }
-    else if (accept("@"))
+    else if (tb_accept("@"))
     {
       arrassn();
     }
@@ -349,9 +361,10 @@ const char *HELP = "+-----------------------------------------------------------
                    "| <var>=<exp>                                                                  |\n"
                    "| print <expr|string>[, <expr|string>][;]                                      |\n"
                    "| rem <anystring> or ' <anystring>                                             |\n"
-                   "| Operators: ^, + / \\ mod + - < <= > >= = <>, not, and, or                    |\n"
+                   "| Operators: ^, + / \\\\ mod + - < <= > >= = <>, not, and, or                    |\n"
                    "| Integer variables a..z, and array @(expr)                                    |\n"
                    "| Functions: abs(expr), asc(ch), rnd(expr), sgn(expr)                          |\n"
+                   "| Sleep <millisec>                                                             |\n"
                    "+------------------------------------------------------------------------------+";
 // HELP
 void help(void) { puts(HELP); }
@@ -386,7 +399,7 @@ void arrassn(void)
 {
   debugLog("@@@ arrassn");
   int atndx = parenexpr();
-  if (!accept("="))
+  if (!tb_accept("="))
   {
     printf("%d |  ", __LINE__);
     printf("(%d, %d) Array Assign: Expectiong '=', found: %s", curline, textp,
@@ -417,7 +430,7 @@ void forstmt(void)
   // vars(var)has the valude; var has the number valude of the variable in 0..25
   forndx = var;
   forvar[forndx] = vars[var];
-  if (!accept("to"))
+  if (!tb_accept("to"))
   {
     printf("%d |  ", __LINE__);
     printf("(%d, %d) For: Expecting 'to, found: %s\n", curline, textp, tok);
@@ -453,7 +466,7 @@ void ifstmt(void)
   else
   {
     // THENはなくてもよい
-    accept("then");
+    tb_accept("then");
     if (toktype == kNUMBER)
     {
       gotostmt();
@@ -604,7 +617,7 @@ void printstmt(void)
     int printwidth = 0;
 
     // PRINT幅
-    if (accept("#"))
+    if (tb_accept("#"))
     {
       if (num <= 0)
       {
@@ -614,7 +627,7 @@ void printstmt(void)
       }
       printwidth = num;
       nexttok();
-      if (!accept(","))
+      if (!tb_accept(","))
       {
         printf("%d |  ", __LINE__);
         printf("Print: Expecting a ',', found: %s\n", pgm[curline]);
@@ -632,7 +645,7 @@ void printstmt(void)
       printf("%*d", printwidth, expression(0));
     }
 
-    if (accept(",") || accept(";"))
+    if (tb_accept(",") || tb_accept(";"))
     {
       printnl = false;
     }
@@ -709,6 +722,14 @@ save_free:
   free(filename);
 }
 
+// SLEEP
+void sleepstmt(void)
+{
+  debugLog("@@@ sleep");
+  num = expression(0);
+  Sleep(num);
+}
+
 // ファイル名取得
 char *getfilename(char action[])
 {
@@ -780,7 +801,7 @@ int getvarindex(void)
 // accept()と同じ理由でfalseを返している
 bool expect(const char *s)
 {
-  if (!accept(s))
+  if (!tb_accept(s))
   {
     printf("%d |  ", __LINE__);
     printf("(%d, %d) Expecting %s, buf ound %s, %s", curline, textp, s, tok,
@@ -793,7 +814,7 @@ bool expect(const char *s)
 
 // 期待したトークンだったら次のトークンを読み進める
 // if(!accept(xxx)) { エラー }みたいにするのでOKだったらfalseで返してる
-bool accept(const char *s)
+bool tb_accept(const char *s)
 {
   if (streql(tok, s))
   {
@@ -814,34 +835,34 @@ int expression(int minprec)
     n = num;
     nexttok();
   }
-  else if (accept("-"))
+  else if (tb_accept("-"))
   {
     n = -expression(7);
   }
-  else if (accept("+"))
+  else if (tb_accept("+"))
   {
     n = expression(7);
   }
-  else if (accept("not"))
+  else if (tb_accept("not"))
   {
     n = !expression(3);
   }
-  else if (accept("abs"))
+  else if (tb_accept("abs"))
   {
     n = abs(parenexpr());
   }
-  else if (accept("asc"))
+  else if (tb_accept("asc"))
   {
     expect("(");
     n = tok[1];
     nexttok();
     expect(")");
   }
-  else if (accept("rnd") || accept("irnd"))
+  else if (tb_accept("rnd") || tb_accept("irnd"))
   {
     n = rnd(parenexpr());
   }
-  else if (accept("sgn"))
+  else if (tb_accept("sgn"))
   {
     n = parenexpr();
     n = (n > 0) - (n < 0);
@@ -851,7 +872,7 @@ int expression(int minprec)
     n = vars[getvarindex()];
     nexttok();
   }
-  else if (accept("@"))
+  else if (tb_accept("@"))
   {
     n = atarry[parenexpr()];
   }
@@ -869,63 +890,63 @@ int expression(int minprec)
 
   for (;;)
   { // while binary operator and precedence of tok >= minprec
-    if (minprec <= 1 && accept("or"))
+    if (minprec <= 1 && tb_accept("or"))
     {
       n = n | expression(2);
     }
-    else if (minprec <= 2 && accept("and"))
+    else if (minprec <= 2 && tb_accept("and"))
     {
       n = n & expression(3);
     }
-    else if (minprec <= 4 && accept("="))
+    else if (minprec <= 4 && tb_accept("="))
     {
       n = n == expression(5);
     }
-    else if (minprec <= 4 && accept("<"))
+    else if (minprec <= 4 && tb_accept("<"))
     {
       n = n < expression(5);
     }
-    else if (minprec <= 4 && accept(">"))
+    else if (minprec <= 4 && tb_accept(">"))
     {
       n = n > expression(5);
     }
-    else if (minprec <= 4 && accept("<>"))
+    else if (minprec <= 4 && tb_accept("<>"))
     {
       n = n != expression(5);
     }
-    else if (minprec <= 4 && accept("<="))
+    else if (minprec <= 4 && tb_accept("<="))
     {
       n = n <= expression(5);
     }
-    else if (minprec <= 4 && accept(">="))
+    else if (minprec <= 4 && tb_accept(">="))
     {
       n = n >= expression(5);
     }
-    else if (minprec <= 5 && accept("+"))
+    else if (minprec <= 5 && tb_accept("+"))
     {
       n += expression(6);
     }
-    else if (minprec <= 5 && accept("-"))
+    else if (minprec <= 5 && tb_accept("-"))
     {
       n -= expression(6);
     }
-    else if (minprec <= 6 && accept("*"))
+    else if (minprec <= 6 && tb_accept("*"))
     {
       n *= expression(7);
     }
-    else if (minprec <= 6 && accept("/"))
+    else if (minprec <= 6 && tb_accept("/"))
     {
       n /= expression(7);
     }
-    else if (minprec <= 6 && accept("\\"))
+    else if (minprec <= 6 && tb_accept("\\"))
     {
       n /= expression(7);
     }
-    else if (minprec <= 6 && accept("mod"))
+    else if (minprec <= 6 && tb_accept("mod"))
     {
       n %= expression(7);
     }
-    else if (minprec <= 8 && accept("^"))
+    else if (minprec <= 8 && tb_accept("^"))
     {
       n = pow(n, expression(9));
     }
@@ -941,7 +962,7 @@ int parenexpr(void)
 {
   int n = 0;
 
-  if (!accept("("))
+  if (!tb_accept("("))
   {
     printf("%d |  ", __LINE__);
     printf("(%d, %d) Paren Expr: Expectiong '(' found %s\n", curline, textp,
@@ -950,7 +971,7 @@ int parenexpr(void)
   else
   {
     n = expression(0); // 括弧の真ん中
-    if (!accept(")"))
+    if (!tb_accept(")"))
     {
       printf("%d |  ", __LINE__);
       printf("(%dm %d) Paren Expr: Expecting ')', found: %s\n", curline, textp,
