@@ -674,7 +674,7 @@ void gotostmt(void)
   ;
   if (validlinenum())
   {
-    initlex2();
+    initlex(num);
   }
 }
 

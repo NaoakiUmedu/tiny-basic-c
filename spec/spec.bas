@@ -207,5 +207,9 @@ t = t + 1: if 2 * -1 <> -2                                                      
 t = t + 1: if 20 - 10 - 2 <> 8                                                                                   then print "expr test 190 failed": e = e + 1
 t = t + 1: if 21 = 42                                                                                            then print "expr test 191 failed": e = e + 1
 t = t + 1: if 42 <> 42                                                                                           then print "expr test 192 failed": e = e + 1
-if e = 0 then print "All "; t; " tests passed"
-if e <> 0 then print e; " tests out of "; t; " failed"
+
+REM IF文のテスト
+t = t + 1: n = 0 : FOR a = 0 to 9 : n = n + 1 : next a : if n <>  10                                             then print "expr test 193 failed": e = e + 1
+
+9999  if e = 0 then print "All "; t; " tests passed"
+10000 if e <> 0 then print e; " tests out of "; t; " failed"
